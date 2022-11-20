@@ -1,0 +1,35 @@
+
+Duplicated item title 'out of the blue' at row 3693
+Empty genres at row 3971
+Empty genres at row 3992
+Empty genres at row 4068
+Empty genres at row 4105
+Empty genres at row 4118
+Duplicated item title 'batman' at row 4267
+Empty genres at row 4293
+Empty genres at row 4314
+Empty genres at row 4385
+Empty genres at row 4400
+Empty genres at row 4413
+Empty genres at row 4458
+Empty genres at row 4504
+Empty genres at row 4550
+Empty genres at row 4553
+Empty genres at row 4562
+Empty genres at row 4566
+Empty genres at row 4569
+Empty genres at row 4571
+Empty genres at row 4581
+Empty genres at row 4611
+Empty genres at row 4622
+Empty genres at row 4633
+Empty genres at row 4657
+Empty genres at row 4674
+Empty genres at row 4681
+Empty genres at row 4714
+Empty genres at row 4716
+Empty genres at row 4801
+
+indexes 347, 496:
+16-35-10751-en-cloudy-with-a-chance-of-meatballs-2009-242988466.0
+16-35-10751-en-cloudy-with-a-chance-of-meatballs-2-2013-248384621.0
