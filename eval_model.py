@@ -16,7 +16,7 @@ print('Model evaluation')
 test_scores = model.predict(X_test)
 
 print(test_scores)
-test_preds = (test_scores >= 0.5)
+test_preds = (test_scores >= 0.21)
 matrix = metrics.confusion_matrix(y_test, test_preds)
 print(matrix)
 disp = metrics.ConfusionMatrixDisplay(matrix)

@@ -4,6 +4,9 @@ import random as rnd
 import matplotlib.pyplot as plt
 rnd.seed(0)
 
+#fraction of of random data
+NOISE = 0.2
+
 N_USERS = 1000
 #user parameters
 AGES =  ["Under18", "18-24", "25-34", "35+"]
@@ -55,25 +58,26 @@ def generate_users(df_gens: pd.DataFrame) -> pd.DataFrame:
         gender = rnd.sample(GENDERS, 1)[0]
         occupation = rnd.sample(OCCUPATIONS, 1)[0]
 
-        gen_1_p = 0.4
-        gen_2_p = 0.4
-        p = 0.8
+        #probability genre 1
+        gen_1_p = (1.0-NOISE)/2
+        #probability genre 2
+        gen_2_p = (1.0-NOISE)/2
         if age == 'Under18':
             # genre 1 40% animation, 40% adventure, 20% random
-            weights1 = [(1 - gen_1_p - gen_2_p) / len(genre_dict)] * len(genre_dict)
+            weights1 = [NOISE / (len(genre_dict)-2)] * len(genre_dict)
             weights1[list(genre_dict.keys()).index("animation")] = gen_1_p
             weights1[list(genre_dict.keys()).index("adventure")] = gen_2_p
             genre1_name = rnd.choices(list(genre_dict.keys()), weights = weights1)[0]
 
             # genre 2 40% comedy, 40% family, 20% random
             # new_genre_dict = dict((i, genre_dict[i]) for i in genre_dict if i != genre1_name)
-            weights2 = [(1 - gen_1_p - gen_2_p) / len(genre_dict)] * len(genre_dict)
+            weights2 = [NOISE / (len(genre_dict)-2)] * len(genre_dict)
             weights2[list(genre_dict.keys()).index("comedy")] = gen_1_p
             weights2[list(genre_dict.keys()).index("family")] = gen_2_p
             genre2_name = rnd.choices(list(genre_dict.keys()), weights = weights2)[0]
 
         elif age == "18-24":
-            if rnd.random() < p:
+            if rnd.random() > NOISE:
                 #italians: 80% crime and drama, 20%random
                 if nationality == 'it':
                     genre1_name = 'crime'
@@ -90,7 +94,7 @@ def generate_users(df_gens: pd.DataFrame) -> pd.DataFrame:
                 genre1_name, genre2_name = rnd.sample(list(genre_dict.keys()), 2)
 
         elif age == "25-34":
-            if rnd.random() < p:
+            if rnd.random() > NOISE:
                 #italians: 80% documentary and western, 20%random
                 if nationality == 'it':
                     genre1_name = 'documentary'
@@ -108,13 +112,13 @@ def generate_users(df_gens: pd.DataFrame) -> pd.DataFrame:
 
         else:
             # genre 1 40% documentary, 40% history, 20% random
-            weights1 = [(1 - gen_1_p - gen_2_p) / len(genre_dict)] * len(genre_dict)
+            weights1 = [NOISE / (len(genre_dict)-2)] * len(genre_dict)
             weights1[list(genre_dict.keys()).index("documentary")] = gen_1_p
             weights1[list(genre_dict.keys()).index("history")] = gen_2_p
             genre1_name = rnd.choices(list(genre_dict.keys()), weights = weights1)[0]
 
             # genre 2 40% comedy, 40% family, 20% random
-            weights2 = [(1 - gen_1_p - gen_2_p) / len(genre_dict)] * len(genre_dict)
+            weights2 = [NOISE / (len(genre_dict)-2)] * len(genre_dict)
             weights2[list(genre_dict.keys()).index("comedy")] = gen_1_p
             weights2[list(genre_dict.keys()).index("family")] = gen_2_p
             genre2_name = rnd.choices(list(genre_dict.keys()), weights = weights2)[0]

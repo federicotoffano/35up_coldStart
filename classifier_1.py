@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 import tensorflow as tf
 from sklearn.metrics import roc_curve, auc
 
-tf.random.set_seed(1)
+tf.random.set_seed(0)
 
 df_users = pd.read_csv('db/users_formatted.csv')
 df_movies = pd.read_csv('db/items_formatted.csv')
