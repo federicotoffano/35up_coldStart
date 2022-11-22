@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 rnd.seed(0)
 
 #fraction of of random data
-NOISE = 0.2
+NOISE_USERS = 0.1
+NOISE_CLICKS = 0.1
 
-N_USERS = 1000
+N_USERS = 5000
 #user parameters
 AGES =  ["Under18", "18-24", "25-34", "35+"]
 NATIONALITIES = ['it', 'pt', 'de']
@@ -59,25 +60,25 @@ def generate_users(df_gens: pd.DataFrame) -> pd.DataFrame:
         occupation = rnd.sample(OCCUPATIONS, 1)[0]
 
         #probability genre 1
-        gen_1_p = (1.0-NOISE)/2
+        gen_1_p = (1.0-NOISE_USERS)/2
         #probability genre 2
-        gen_2_p = (1.0-NOISE)/2
+        gen_2_p = (1.0-NOISE_USERS)/2
         if age == 'Under18':
             # genre 1 40% animation, 40% adventure, 20% random
-            weights1 = [NOISE / (len(genre_dict)-2)] * len(genre_dict)
+            weights1 = [NOISE_USERS / (len(genre_dict)-2)] * len(genre_dict)
             weights1[list(genre_dict.keys()).index("animation")] = gen_1_p
             weights1[list(genre_dict.keys()).index("adventure")] = gen_2_p
             genre1_name = rnd.choices(list(genre_dict.keys()), weights = weights1)[0]
 
             # genre 2 40% comedy, 40% family, 20% random
             # new_genre_dict = dict((i, genre_dict[i]) for i in genre_dict if i != genre1_name)
-            weights2 = [NOISE / (len(genre_dict)-2)] * len(genre_dict)
+            weights2 = [NOISE_USERS / (len(genre_dict)-2)] * len(genre_dict)
             weights2[list(genre_dict.keys()).index("comedy")] = gen_1_p
             weights2[list(genre_dict.keys()).index("family")] = gen_2_p
             genre2_name = rnd.choices(list(genre_dict.keys()), weights = weights2)[0]
 
         elif age == "18-24":
-            if rnd.random() > NOISE:
+            if rnd.random() > NOISE_USERS:
                 #italians: 80% crime and drama, 20%random
                 if nationality == 'it':
                     genre1_name = 'crime'
@@ -94,7 +95,7 @@ def generate_users(df_gens: pd.DataFrame) -> pd.DataFrame:
                 genre1_name, genre2_name = rnd.sample(list(genre_dict.keys()), 2)
 
         elif age == "25-34":
-            if rnd.random() > NOISE:
+            if rnd.random() > NOISE_USERS:
                 #italians: 80% documentary and western, 20%random
                 if nationality == 'it':
                     genre1_name = 'documentary'
@@ -112,13 +113,13 @@ def generate_users(df_gens: pd.DataFrame) -> pd.DataFrame:
 
         else:
             # genre 1 40% documentary, 40% history, 20% random
-            weights1 = [NOISE / (len(genre_dict)-2)] * len(genre_dict)
+            weights1 = [NOISE_USERS / (len(genre_dict)-2)] * len(genre_dict)
             weights1[list(genre_dict.keys()).index("documentary")] = gen_1_p
             weights1[list(genre_dict.keys()).index("history")] = gen_2_p
             genre1_name = rnd.choices(list(genre_dict.keys()), weights = weights1)[0]
 
             # genre 2 40% comedy, 40% family, 20% random
-            weights2 = [NOISE / (len(genre_dict)-2)] * len(genre_dict)
+            weights2 = [NOISE_USERS / (len(genre_dict)-2)] * len(genre_dict)
             weights2[list(genre_dict.keys()).index("comedy")] = gen_1_p
             weights2[list(genre_dict.keys()).index("family")] = gen_2_p
             genre2_name = rnd.choices(list(genre_dict.keys()), weights = weights2)[0]
@@ -161,38 +162,41 @@ def generate_interactions(df_users: pd.DataFrame, df_items: pd.DataFrame) -> pd.
                              'interaction': pd.Series(dtype='bool')})
 
     for index, user in df_users.iterrows():
-        if user['age'] == 'Under18':
-            #movie is of genre1 (condition 1)
-            df_items_tmp = df_items[df_items['genres'].str.contains(str(user['genre1']))]
-            #and year > 2010
-            df_items_tmp_2 = df_items_tmp[df_items_tmp['year'] > 2010]
+        if rnd.random() > NOISE_CLICKS:
+            if user['age'] == 'Under18':
+                #movie is of genre1 (condition 1)
+                df_items_tmp = df_items[df_items['genres'].str.contains(str(user['genre1']))]
+                #and year > 2010
+                df_items_tmp_2 = df_items_tmp[df_items_tmp['year'] > 2010]
 
-        elif user['age'] == "18-24":
-            #movie is of genre1 (condition 1)
-            df_items_tmp = df_items[df_items['genres'].str.contains(str(user['genre1']))]
-            #and popularity > mean popularity
-            df_items_tmp_2 = df_items_tmp[df_items_tmp['popularity'] > df_items_tmp["popularity"].mean()]
+            elif user['age'] == "18-24":
+                #movie is of genre1 (condition 1)
+                df_items_tmp = df_items[df_items['genres'].str.contains(str(user['genre1']))]
+                #and popularity > mean popularity
+                df_items_tmp_2 = df_items_tmp[df_items_tmp['popularity'] > df_items_tmp["popularity"].mean()]
 
-        elif user['age'] == "25-34":
-            #movie is of genre1 (condition 1)
-            df_items_tmp = df_items[df_items['genres'].str.contains(str(user['genre1']))]
-            #and original_language = user language
-            df_items_tmp_2 = df_items_tmp[df_items_tmp['original_language'].str.contains(str(user['nationality']))]
+            elif user['age'] == "25-34":
+                #movie is of genre1 (condition 1)
+                df_items_tmp = df_items[df_items['genres'].str.contains(str(user['genre1']))]
+                #and original_language = user language
+                df_items_tmp_2 = df_items_tmp[df_items_tmp['original_language'].str.contains(str(user['nationality']))]
 
-        else:#elif user['age'] == "35+":
-            #movie is of genre1 (condition 1)
-            df_items_tmp = df_items[df_items['genres'].str.contains(str(user['genre1']))]
-            #and movie is of genre2
-            df_items_tmp_2 = df_items_tmp[df_items_tmp['genres'].str.contains(str(user['genre2']))]
+            else:#elif user['age'] == "35+":
+                #movie is of genre1 (condition 1)
+                df_items_tmp = df_items[df_items['genres'].str.contains(str(user['genre1']))]
+                #and movie is of genre2
+                df_items_tmp_2 = df_items_tmp[df_items_tmp['genres'].str.contains(str(user['genre2']))]
 
-        # store positive interaction
+            # store positive interaction
 
-        # len(df_items_tmp_2) > 0 if condition1 and condition 2 are satisfied.
-        if len(df_items_tmp_2) > 0:
-            id_pos = int(df_items_tmp_2.sample()['id'])
-        # Otherwise focus only on condition1
+            # len(df_items_tmp_2) > 0 if condition1 and condition 2 are satisfied.
+            if len(df_items_tmp_2) > 0:
+                id_pos = int(df_items_tmp_2.sample()['id'])
+            # Otherwise focus only on condition1
+            else:
+                id_pos = int(df_items_tmp.sample()['id'])
         else:
-            id_pos = int(df_items_tmp.sample()['id'])
+            id_pos = int(df_items.sample()['id'])
         interaction = {'userID': int(user['id']), 'itemID': id_pos, 'interaction': True}
         df_interactions = pd.concat([df_interactions, pd.DataFrame([interaction])], axis=0, ignore_index=True)
 

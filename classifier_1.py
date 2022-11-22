@@ -10,8 +10,11 @@ from keras.optimizers import Adagrad, Adam, SGD, RMSprop
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix
 import tensorflow as tf
 from sklearn.metrics import roc_curve, auc
+import format_db
 
 tf.random.set_seed(0)
+
+format_db.format()
 
 df_users = pd.read_csv('db/users_formatted.csv')
 df_movies = pd.read_csv('db/items_formatted.csv')
@@ -26,7 +29,7 @@ y = [int(x) for x in df_interactions['interaction'].values.tolist()]
 df_interactions.drop('interaction', axis=1, inplace=True)
 X = df_interactions.values.tolist()
 X_train, X_test, y_train, y_test = \
-    train_test_split(X, y, test_size=0.33, random_state=42)
+    train_test_split(X, y, test_size=0.2, random_state=42)
 
 
 n_input_features = len(X[0])
@@ -57,7 +60,7 @@ print(f'Number of positive samples test set: {np.count_nonzero(y_test == True)}'
 
 #Neural Network
 # l2_reg = 0.001
-l2_reg = 0.005
+l2_reg = 0.001
 model = Sequential([Input(shape=(n_input_features,), name='input'),
 Dense(32, kernel_regularizer=l2(l2_reg), bias_regularizer=l2(l2_reg), activation='relu', name='layer%d' % 1),
 Dense(16, kernel_regularizer=l2(l2_reg), bias_regularizer=l2(l2_reg), activation='relu', name='layer%d' % 2),
@@ -66,7 +69,7 @@ Dense(4, kernel_regularizer=l2(l2_reg), bias_regularizer=l2(l2_reg), activation=
 Dense(1, activation='sigmoid', name='prediction')])
 
 # binary crossentropy loss function with Adam optimizer
-learning_rate = 0.01
+learning_rate = 0.02
 model.compile(optimizer=Adam(lr=learning_rate), loss='binary_crossentropy', metrics=["accuracy"])
 
 # summarize layers
@@ -85,7 +88,7 @@ print(score)
 print('Model evaluation')
 test_scores = model.predict(X_test)
 print(test_scores)
-test_preds = (test_scores >= 0.5)
+test_preds = (test_scores >= 0.25)
 matrix = metrics.confusion_matrix(y_test, test_preds)
 print(matrix)
 disp = metrics.ConfusionMatrixDisplay(matrix)
