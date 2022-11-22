@@ -17,11 +17,11 @@ tf.random.set_seed(0)
 format_db.format()
 
 df_users = pd.read_csv('db/users_formatted.csv')
-df_movies = pd.read_csv('db/items_formatted.csv')
+df_items = pd.read_csv('db/items_formatted.csv')
 df_interactions = pd.read_csv('db/interactions.csv')
 
 df_interactions = pd.merge(df_interactions, df_users.rename(columns={'id': 'userID'}), on='userID')
-df_interactions = pd.merge(df_interactions, df_movies.rename(columns={'id': 'itemID'}), on='itemID')
+df_interactions = pd.merge(df_interactions, df_items.rename(columns={'id': 'itemID'}), on='itemID')
 df_interactions.drop('userID', axis=1, inplace=True)
 df_interactions.drop('itemID', axis=1, inplace=True)
 
@@ -59,8 +59,8 @@ print(f'Number of positive samples train set: {np.count_nonzero(y_train == True)
 print(f'Number of positive samples test set: {np.count_nonzero(y_test == True)}')
 
 #Neural Network
-# l2_reg = 0.001
 l2_reg = 0.001
+# l2_reg = 0.0005
 model = Sequential([Input(shape=(n_input_features,), name='input'),
 Dense(32, kernel_regularizer=l2(l2_reg), bias_regularizer=l2(l2_reg), activation='relu', name='layer%d' % 1),
 Dense(16, kernel_regularizer=l2(l2_reg), bias_regularizer=l2(l2_reg), activation='relu', name='layer%d' % 2),
@@ -79,7 +79,7 @@ print(model.summary())
 # print(y_train)
 # print(len(y_train))
 
-history = model.fit(X_train, y_train, batch_size=32, epochs=100,
+history = model.fit(X_train, y_train, batch_size=32, epochs=50,
                     validation_data=(X_test, y_test))
 model.save('model/seq.keras')
 score = model.evaluate(X_test, y_test, verbose=1)

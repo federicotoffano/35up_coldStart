@@ -9,28 +9,28 @@ X_test = np.load('db/train_test/X_test.npy')
 y_test = np.load('db/train_test/y_test.npy')
 
 model = keras.models.load_model('model/seq.keras')
+
+
+print('\nModel evaluation...')
 score = model.evaluate(X_test, y_test, verbose=1)
-print(score)
-
-print('Model evaluation')
 test_scores = model.predict(X_test)
-
-print(test_scores)
 test_preds = (test_scores >= 0.25)
 matrix = metrics.confusion_matrix(y_test, test_preds)
+
+print('\nConfusion matrix:')
 print(matrix)
 disp = metrics.ConfusionMatrixDisplay(matrix)
 disp.plot()
 plt.show()
-print('scores')
-print(f1_score(y_test, test_preds, average="macro"))
-print(precision_score(y_test, test_preds, average="macro"))
-print(recall_score(y_test, test_preds, average="macro"))
+
+print()
+print(f'F1 score: {f1_score(y_test, test_preds, average="macro")}')
+print(f'Precision: {precision_score(y_test, test_preds, average="macro")}')
+print(f'Recall: {recall_score(y_test, test_preds, average="macro")}')
 print('-----')
 
 y_pred_keras = test_scores.ravel()
 fpr_keras, tpr_keras, thresholds_keras = roc_curve(y_test, y_pred_keras)
-
 auc_keras = auc(fpr_keras, tpr_keras)
 
 plt.figure(1)

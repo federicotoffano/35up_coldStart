@@ -3,7 +3,32 @@ from sklearn.preprocessing import MultiLabelBinarizer, MinMaxScaler
 from pickle import load
 import numpy as np
 from tensorflow import keras
+import re
 
+USER_INPUT = True
+LANGS = ['de', 'it', 'pt']
+GENDERS = ['F', 'M']
+PROFFS = ['programmer', 'self-employed', 'tradesman']
+GENRES = ['action', 'adventure',
+          'animation', 'comedy', 'crime', 'documentary', 'drama', 'family',
+          'fantasy', 'foreign', 'history', 'horror', 'music', 'mystery',
+          'romance', 'science fiction', 'thriller', 'tv movie', 'war', 'western']
+
+BINS_PATH = ["model/user_age_binarizer.pkl", "model/user_nationality_binarizer.pkl",
+              "model/user_gender_binarizer.pkl", "model/user_occupation_binarizer.pkl",
+              "model/genres_binarizer.pkl"]
+
+#load binarizers
+bins_list = []
+for bin_path in BINS_PATH:
+    with open(bin_path, "rb") as input_file:
+        user_age_binarizer = load(input_file)
+        bins_list.append(user_age_binarizer)
+
+#load classifier
+model = keras.models.load_model('model/seq.keras')
+
+#load datasets
 df_items_formatted = pd.read_csv('db/items_formatted.csv')
 df_users_formatted = pd.read_csv('db/users_formatted.csv')
 df_users = pd.read_csv('db/users.csv')
@@ -12,72 +37,60 @@ df_gens = pd.read_csv('db/genres.csv')
 
 genre_dict = dict(zip(df_gens['id'], df_gens['genre']))
 
-print(df_users_formatted.columns)
-print(print(df_users.columns))
+def print_recommendation(user_data):
 
-
-bin_list = []
-with open(r"model/user_age_binarizer.pkl", "rb") as input_file:
-    user_age_binarizer = load(input_file)
-    bin_list.append(user_age_binarizer)
-with open(r"model/user_nationality_binarizer.pkl", "rb") as input_file:
-    user_nationality_binarizer = load(input_file)
-    bin_list.append(user_nationality_binarizer)
-with open(r"model/user_gender_binarizer.pkl", "rb") as input_file:
-    user_gender_binarizer = load(input_file)
-    bin_list.append(user_gender_binarizer)
-with open(r"model/user_occupation_binarizer.pkl", "rb") as input_file:
-    user_occupation_binarizer = load(input_file)
-    bin_list.append(user_occupation_binarizer)
-with open(r"model/genres_binarizer.pkl", "rb") as input_file:
-    genres_binarizer = load(input_file)
-    bin_list.append(genres_binarizer)
-
-
-# sample_input = [['Under18'], ['it'], ['M'], ['programmer'], ['animation', 'family']]
-# sample_input = [['25-34'], ['de'], ['M'], ['programmer'], ['music', 'western']]
-# sample_input = [['Under18'], ['it'], ['M'], ['programmer'], ['animation', 'adventure']]
-# sample_input = [['35+'], ['it'], ['M'], ['comedy'], ['history', 'family']]
-sample_input = [['18-24'], ['de'], ['M'], ['comedy'], ['crime', 'mystery']]
-
-
-
-user_vector = np.array([])
-print(user_vector)
-for index, val in enumerate(sample_input):
-    vec = bin_list[index].transform([val])[0]
-    print(vec)
-    user_vector = np.concatenate((user_vector, vec))
-# print(user_vector)
-model = keras.models.load_model('model/seq.keras')
-user_item_list = np.array([np.array(np.concatenate((user_vector, np.array(row[1:]).tolist())))
-                                            for index, row in df_items_formatted.iterrows()])
-test_scores = model.predict(user_item_list).flatten()
-
-print(test_scores)
-print(max(test_scores))
-
-n_top_items = 5
-ind = np.argpartition(test_scores, -n_top_items)[-n_top_items:]
-top_items = df_items.iloc[ind]
-top_test_scores = test_scores[ind]
-recc = 0
-genre_dict = dict(zip(df_gens['id'], df_gens['genre']))
-for index, row in top_items.iterrows():
-    gens_indexes = str(row['genres']).split('-')
-    gen_names = [genre_dict[int(gen)] for gen in gens_indexes]
-    original_title = str(row['original_title'])
-    original_language = str(row['original_language'])
-    year = str(row['year'])
-    popularity  = str(row['popularity'])
-    print(f'\nRecommendation {recc+1}'
-          f'\nTitle: {original_title}'
-          f'\nGenres: {gen_names}'
-          f'\nOriginal Language: {original_language}'
-          f'\nYear: {year}'
-          f'\nPopularity: {popularity}'
-          f'\nConfidence of recommendation: {top_test_scores[recc]}')
-    recc+=1
+    age = user_data[0][0]
+    if age < 18:
+        age_rng = 'Under18'
+    elif age < 25:
+        age_rng = '18-24'
+    elif age < 35:
+        age_rng = '25-34'
+    else:
+        age_rng = '35+'
+    user_data[0][0] = age_rng
+    
+    #build user vector using binarizers
+    user_vector = np.array([])
+    for index, val in enumerate(user_data):
+        vec = bins_list[index].transform([val])[0]
+        # print(vec)
+        user_vector = np.concatenate((user_vector, vec))
+    # print(user_vector)
+    
+    #input classifier - built user-item list for each item
+    user_item_list = np.array([np.array(np.concatenate((user_vector, np.array(row[1:]).tolist())))
+                                                for index, row in df_items_formatted.iterrows()])
+    #compute item socres
+    item_scores = model.predict(user_item_list).flatten()
+    # print(item_scores)
+    # print(max(item_scores))
+    
+    #select top items
+    n_top_items = 5
+    ind = np.argpartition(item_scores, -n_top_items)[-n_top_items:]
+    top_items = df_items.iloc[ind]
+    top_test_scores = item_scores[ind]
+    
+    #print recommendations
+    recc = 0
+    genre_dict = dict(zip(df_gens['id'], df_gens['genre']))
+    for index, row in top_items.iterrows():
+        gens_indexes = str(row['genres']).split('-')
+        #format genres output string
+        gen_names = re.compile("(['\]\[])").sub(r'', str([genre_dict[int(gen)] for gen in gens_indexes]))
+        original_title = str(row['original_title'])
+        original_language = str(row['original_language'])
+        year = str(row['year'])
+        popularity  = str(row['popularity'])
+        print(f'\nRecommendation {recc+1}'
+              f'\nTitle: {original_title}'
+              f'\nGenres: {gen_names}'
+              f'\nOriginal Language: {original_language}'
+              f'\nYear: {year}'
+              f'\nPopularity: {round(float(popularity),4)}'
+              f'\nConfidence of recommendation: {round(float(top_test_scores[recc]),4)}')
+        recc+=1
 
 
 
@@ -93,3 +106,78 @@ for index, row in top_items.iterrows():
 
 # input: 'age', 'nationality', 'gender', 'occupation', 'genre1', 'genre2'
 
+if USER_INPUT:
+    print('lang: ' + re.compile("(['\]\[])").sub(r'', str(GENDERS)))
+    print('lang: ' + re.compile("(['\]\[])").sub(r'', str(PROFFS)))
+    print('lang: ' + re.compile("(['\]\[])").sub(r'', str(GENRES)))
+    print()
+    print('input format: <age> <lang> <gender> <profession> <genre1> <genre2>')
+    print('input exaple: 20 de M programmer music western')
+
+    while True:
+        try:
+            age = int(input('age must be int in range [1,100]\nyour age: '))
+            if 0 < age < 101:
+                break
+        except (ValueError, TypeError):
+            pass
+    while True:
+        lang = input('languages: ' + re.compile("(['\]\[])").sub(r'', str(LANGS)) + '\nyour lang: ')
+        if lang in LANGS:
+            break
+    while True:
+        gender = input('genders: ' + re.compile("(['\]\[])").sub(r'', str(GENDERS)) + '\nyour gender: ')
+        if gender in GENDERS:
+            break
+    while True:
+        prof = input('professions: ' + re.compile("(['\]\[])").sub(r'', str(PROFFS)) + '\nyour profession: ')
+        if prof in PROFFS:
+            break
+    while True:
+        genre1 = input('genres: ' + re.compile("(['\]\[])").sub(r'', str(GENRES)) + '\nyour first genre: ')
+        if genre1 in GENRES:
+            break
+    while True:
+        genre2 = input('genres: ' + re.compile("(['\]\[])").sub(r'', str(GENRES)) + '\nyour second genre: ')
+        if genre2 in GENRES:
+            break
+
+    user_data = [[age], [lang], [gender], [prof], [genre1, genre2]]
+    print(f'your data: {user_data}')
+else:
+
+    user_data = [[15], ['it'], ['M'], ['programmer'], ['animation', 'family']]
+    # user_data = [[14], ['it'], ['M'], ['programmer'], ['animation', 'adventure']]
+    # user_data = [[22], ['it'], ['M'], ['programmer'], ['crime', 'drama']]
+    # user_data = [[22], ['pt'], ['M'], ['programmer'], ['science fiction', 'action']]
+    # user_data = [[30], ['it'], ['M'], ['programmer'], ['music', 'western']]
+    # user_data = [[30], ['pt'], ['M'], ['programmer'], ['history fiction', 'western']]
+    # user_data = [[37], ['de'], ['M'], ['programmer'], ['documentary', 'family']]
+    # user_data = [[37], ['de'], ['M'], ['programmer'], ['comedy', 'family']]
+    print(user_data)
+"""
+    if age == 'Under18':
+        genre 1 40% animation, 40% adventure, 20% random
+        genre 2 40% comedy, 40% family, 20% random
+    if age == "18-24":
+        italians: genre1 and genre2 80% crime and drama, 20%random
+        brazilians: genre1 and genre2 80% science fiction and action, 20%random
+        germans: genre1 and genre2 80% horror and mystery, 20% random
+    if age == "25-34":
+        italians: 80% documentary and western, 20%random
+        brazilians: 80% history fiction and western 20%random
+        germans: 80% music and western 20% random
+    if age == '35+':
+        genre 1 40% documentary, 40% history, 20% random
+        genre 2 40% comedy, 40% family, 20% random
+"""
+"""
+5 interactions per user, only one was clicked.
+Clicking criteria: movie is of genre1 (condition 1),
+and year > 2010 (condition 2) if Under18
+and popularity > mean popularity (condition 2) if 18-24
+and original_language = user language (condition 2) if 25-34
+and movie is of genre2 (condition 2) if 35+
+
+"""
+print_recommendation(user_data)
