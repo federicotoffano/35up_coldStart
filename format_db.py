@@ -3,6 +3,15 @@ from sklearn.preprocessing import MultiLabelBinarizer, MinMaxScaler
 from pickle import dump
 
 def binarizer(colname, df, prefix_path):
+    """
+    One-hot encoding of column colname of Dataframe df.
+    :param colname: string: column name
+    :param df: Dataframe
+    :param prefix_path: string: prefix of the path to save the object. For example,
+    with prefix_path='model/genres' the object will be stored as
+     model/genres_binarizer.pkl
+    :return: Dataframe: copy of the input Dataframe with the one-hot encoding of column colname
+    """
     df_temp = df.copy()
     ml_binarizer = MultiLabelBinarizer()
     to_trans = ml_binarizer.fit_transform([[x] for x in list(df_temp[colname])])
@@ -13,6 +22,15 @@ def binarizer(colname, df, prefix_path):
     return df_temp
 
 def scaler(colname, df, prefix_path):
+    """
+    MinMaxScaler scaling of column colname of Dataframe df.
+    :param colname: string: column name
+    :param df: Dataframe
+    :param prefix_path: string: prefix of the path to save the object. For example,
+    with prefix_path='model/popularity' the object will be stored as
+     model/popularity_scaler.pkl
+    :return: Dataframe: copy of the input Dataframe with the column colname scaled
+    """
     df_temp = df.copy()
     min_max_scaler = MinMaxScaler()
     res = min_max_scaler.fit_transform(pd.DataFrame(df_temp[colname]))
@@ -22,13 +40,17 @@ def scaler(colname, df, prefix_path):
 
 
 def format():
+    """
+    Format users and items for training the classifier
+    :return: None
+    """
     df_gens = pd.read_csv('db/genres.csv')
     genre_dict = dict(zip(df_gens['id'], df_gens['genre']))
     genres_ml_binarizer = MultiLabelBinarizer()
     genres_ml_binarizer.fit_transform([list(df_gens['genre'])])
     dump(genres_ml_binarizer, open('model/genres_binarizer.pkl', 'wb'))
 
-    #--------------MOVIES----------------
+    #--------------ITEMS----------------
     df_items = pd.read_csv('db/items.csv')
     df_items.drop('original_title', axis=1, inplace=True)
 

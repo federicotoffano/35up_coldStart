@@ -11,6 +11,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 import tensorflow as tf
 from sklearn.metrics import roc_curve, auc
 import format_db
+from keras.utils.vis_utils import plot_model
 
 tf.random.set_seed(0)
 
@@ -62,9 +63,10 @@ print(f'Number of positive samples test set: {np.count_nonzero(y_test == True)}'
 l2_reg = 0.001
 # l2_reg = 0.0005
 model = Sequential([Input(shape=(n_input_features,), name='input'),
+Dense(64, kernel_regularizer=l2(l2_reg), bias_regularizer=l2(l2_reg), activation='relu', name='layer%d' % 0),
 Dense(32, kernel_regularizer=l2(l2_reg), bias_regularizer=l2(l2_reg), activation='relu', name='layer%d' % 1),
 Dense(16, kernel_regularizer=l2(l2_reg), bias_regularizer=l2(l2_reg), activation='relu', name='layer%d' % 2),
-Dense(8, kernel_regularizer=l2(l2_reg), bias_regularizer=l2(l2_reg), activation='relu', name='layer%d' % 3),
+# Dense(8, kernel_regularizer=l2(l2_reg), bias_regularizer=l2(l2_reg), activation='relu', name='layer%d' % 3),
 Dense(4, kernel_regularizer=l2(l2_reg), bias_regularizer=l2(l2_reg), activation='relu', name='layer%d' % 4),
 Dense(1, activation='sigmoid', name='prediction')])
 
@@ -74,6 +76,8 @@ model.compile(optimizer=Adam(lr=learning_rate), loss='binary_crossentropy', metr
 
 # summarize layers
 print(model.summary())
+plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
+plt.show(block=True)
 
 # print(len(X_train))
 # print(y_train)

@@ -5,7 +5,7 @@ import numpy as np
 from tensorflow import keras
 import re
 
-USER_INPUT = True
+USER_INPUT = False
 LANGS = ['de', 'it', 'pt']
 GENDERS = ['F', 'M']
 PROFFS = ['programmer', 'self-employed', 'tradesman']
@@ -146,38 +146,7 @@ if USER_INPUT:
     print(f'your data: {user_data}')
 else:
 
-    user_data = [[15], ['it'], ['M'], ['programmer'], ['animation', 'family']]
-    # user_data = [[14], ['it'], ['M'], ['programmer'], ['animation', 'adventure']]
-    # user_data = [[22], ['it'], ['M'], ['programmer'], ['crime', 'drama']]
-    # user_data = [[22], ['pt'], ['M'], ['programmer'], ['science fiction', 'action']]
-    # user_data = [[30], ['it'], ['M'], ['programmer'], ['music', 'western']]
-    # user_data = [[30], ['pt'], ['M'], ['programmer'], ['history fiction', 'western']]
-    # user_data = [[37], ['de'], ['M'], ['programmer'], ['documentary', 'family']]
-    # user_data = [[37], ['de'], ['M'], ['programmer'], ['comedy', 'family']]
+    user_data = [[22], ['it'], ['M'], ['programmer'], ['crime', 'drama']]
     print(user_data)
-"""
-    if age == 'Under18':
-        genre 1 40% animation, 40% adventure, 20% random
-        genre 2 40% comedy, 40% family, 20% random
-    if age == "18-24":
-        italians: genre1 and genre2 80% crime and drama, 20%random
-        brazilians: genre1 and genre2 80% science fiction and action, 20%random
-        germans: genre1 and genre2 80% horror and mystery, 20% random
-    if age == "25-34":
-        italians: 80% documentary and western, 20%random
-        brazilians: 80% history fiction and western 20%random
-        germans: 80% music and western 20% random
-    if age == '35+':
-        genre 1 40% documentary, 40% history, 20% random
-        genre 2 40% comedy, 40% family, 20% random
-"""
-"""
-5 interactions per user, only one was clicked.
-Clicking criteria: movie is of genre1 (condition 1),
-and year > 2010 (condition 2) if Under18
-and popularity > mean popularity (condition 2) if 18-24
-and original_language = user language (condition 2) if 25-34
-and movie is of genre2 (condition 2) if 35+
 
-"""
 print_recommendation(user_data)

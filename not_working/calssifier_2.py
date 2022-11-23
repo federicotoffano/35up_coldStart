@@ -19,15 +19,15 @@ import tensorflow as tf
 tf.random.set_seed(1)
 rnd.seed(1)
 
-df_users = pd.read_csv('db/users_ml.csv')
-df_movies = pd.read_csv('db/items_ml.csv')
+df_users = pd.read_csv('../db/users_formatted.csv')
+df_items = pd.read_csv('../db/items_formatted.csv')
 df_interactions = pd.read_csv('../db/interactions.csv')
 
 df_interactions_users = pd.merge(df_interactions, df_users.rename(columns={'id': 'userID'}), on='userID')
 df_interactions_users.drop('userID', axis=1, inplace=True)
 df_interactions_users.drop('itemID', axis=1, inplace=True)
 #95cols
-df_interactions_items = pd.merge(df_interactions, df_movies.rename(columns={'id': 'itemID'}), on='itemID')
+df_interactions_items = pd.merge(df_interactions, df_items.rename(columns={'id': 'itemID'}), on='itemID')
 df_interactions_items.drop('userID', axis=1, inplace=True)
 df_interactions_items.drop('itemID', axis=1, inplace=True)
 

@@ -4,9 +4,14 @@ import difflib
 import numpy as np
 from typing import Union, List
 
+#look for simialr items using difflib.SequenceMatcher
+#it takes time...
+SIMIL_ITEMS_SEARCH = False
+
 Num = Union[int, float]
 #log variable
 log = ''
+
 
 def get_val(df: pd.DataFrame, row_index: int, col_name: str):
     assert type(col_name) is str
@@ -183,28 +188,31 @@ print(f'New Dataset length: {len(items_df)}')
 items_df.to_csv('db/items.csv', index=False)
 genres_df.to_csv('db/genres.csv', index=False)
 
-# manual check to see if there are duplicates
-print('\nLooking for similar items...')
-items_df.drop('id', inplace=True, axis=1)
-items_df.drop('popularity', inplace=True, axis=1)
-items_df.drop('vote_average', inplace=True, axis=1)
-items_df.drop('vote_count', inplace=True, axis=1)
-#create string representing row
-r = items_df.to_string(header=False, index=False, index_names=False).split('\n')
-vals = ['-'.join(el.split()) for el in r]
 
-for index1, t1 in enumerate(vals):
-    for index2 in range(index1 + 1, len(vals)):
-        t2 = vals[index2]
-        # T - total number of elements in both strings (len(first_string) + len(second_string))
-        # M - number of matches
-        # Distance = 2.0 * M / T -> between 0.0 and 1.0
-        # (1.0 if the sequences are identical, and 0.0 if they don't have anything in common)
-        seq = difflib.SequenceMatcher(a=t1, b=t2)
-        if seq.ratio() > 0.9:
-            msg = f'\nindexes {index1}, {index2}:\n{t1}\n{t2}'
-            log += f'\n{msg}'
-            print(msg)
+if SIMIL_ITEMS_SEARCH:
+    # manual check to see if there are duplicates
+    log += "\nLooking for similar items..."
+    print('\nLooking for similar items...')
+    items_df.drop('id', inplace=True, axis=1)
+    items_df.drop('popularity', inplace=True, axis=1)
+    items_df.drop('vote_average', inplace=True, axis=1)
+    items_df.drop('vote_count', inplace=True, axis=1)
+    #create string representing row
+    r = items_df.to_string(header=False, index=False, index_names=False).split('\n')
+    vals = ['-'.join(el.split()) for el in r]
+
+    for index1, t1 in enumerate(vals):
+        for index2 in range(index1 + 1, len(vals)):
+            t2 = vals[index2]
+            # T - total number of elements in both strings (len(first_string) + len(second_string))
+            # M - number of matches
+            # Distance = 2.0 * M / T -> between 0.0 and 1.0
+            # (1.0 if the sequences are identical, and 0.0 if they don't have anything in common)
+            seq = difflib.SequenceMatcher(a=t1, b=t2)
+            if seq.ratio() > 0.9:
+                msg = f'\nindexes {index1}, {index2}:\n{t1}\n{t2}'
+                log += f'\n{msg}'
+                print(msg)
 
 text_file = open("db/log.txt", "w")
 text_file.write(log)

@@ -14,13 +14,14 @@ model = keras.models.load_model('model/seq.keras')
 print('\nModel evaluation...')
 score = model.evaluate(X_test, y_test, verbose=1)
 test_scores = model.predict(X_test)
-test_preds = (test_scores >= 0.25)
+test_preds = (test_scores >= 0.2)
 matrix = metrics.confusion_matrix(y_test, test_preds)
 
 print('\nConfusion matrix:')
 print(matrix)
 disp = metrics.ConfusionMatrixDisplay(matrix)
 disp.plot()
+plt.savefig('confusion_matrix.png')
 plt.show()
 
 print()
@@ -40,6 +41,7 @@ plt.xlabel('False positive rate')
 plt.ylabel('True positive rate')
 plt.title('ROC curve')
 plt.legend(loc='best')
+plt.savefig('ROC.png')
 plt.show()
 # Zoom in view of the upper left corner.
 plt.figure(2)
@@ -51,7 +53,9 @@ plt.xlabel('False positive rate')
 plt.ylabel('True positive rate')
 plt.title('ROC curve (zoomed in at top left)')
 plt.legend(loc='best')
+plt.savefig('ROC_zoom.png')
 plt.show(block=True)
+
 
 
 

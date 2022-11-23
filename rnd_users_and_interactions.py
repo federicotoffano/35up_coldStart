@@ -32,13 +32,13 @@ def generate_users(df_gens: pd.DataFrame) -> pd.DataFrame:
         genre 1: 1-p/2 animation, 1-p/2 adventure, p others
         genre 2: 1-p/2 comedy, 1-p/2 family, p others
     if age == "18-24":
-        italians: genre1 and genre2 p crime and drama, p others
-        brazilians: genre1 and genre2 p science fiction and action, p others
-        germans: genre1 and genre2 p horror and mystery, p others
+        italians: 1-p genre1 crime and genre2 drama, p others
+        brazilians: 1-p genre1 science fiction and genre2 and action, p others
+        germans: 1-p genre1 horror and genre2 mystery, p others
     if age == "25-34":
-        italians: 1-p documentary and western, p others
-        brazilians: 1-p history fiction and western p others
-        germans: 1-p music and western p others
+        italians: 1-p genre1 documentary and genre2 western, p others
+        brazilians: 1-p genre1 history fiction and genre2 western, p others
+        germans: 1-p genre1 music and genre2 western, p others
     if age == '35+':
         genre 1: 1-p/2 documentary, 1-p/2 history, p others
         genre 2: 1-p/2 comedy, 1-p/2 family, p others
@@ -67,13 +67,13 @@ def generate_users(df_gens: pd.DataFrame) -> pd.DataFrame:
         #probability genre 2
         gen_2_p = (1.0-NOISE_USERS)/2
         if age == 'Under18':
-            # genre 1 1-p/2 animation, 1-p/2 adventure, 20% others
+            # genre: 1 1-p/2 animation, 1-p/2 adventure, p others
             weights1 = [NOISE_USERS / (len(genre_dict)-2)] * len(genre_dict)
             weights1[list(genre_dict.keys()).index("animation")] = gen_1_p
             weights1[list(genre_dict.keys()).index("adventure")] = gen_2_p
             genre1_name = rnd.choices(list(genre_dict.keys()), weights = weights1)[0]
 
-            # genre 2 1-p/2 comedy, 1-p/2 family, 20% others
+            # genre: 2 1-p/2 comedy, 1-p/2 family, p others
             # new_genre_dict = dict((i, genre_dict[i]) for i in genre_dict if i != genre1_name)
             weights2 = [NOISE_USERS / (len(genre_dict)-2)] * len(genre_dict)
             weights2[list(genre_dict.keys()).index("comedy")] = gen_1_p
@@ -82,15 +82,15 @@ def generate_users(df_gens: pd.DataFrame) -> pd.DataFrame:
 
         elif age == "18-24":
             if rnd.random() > NOISE_USERS:
-                #italians: 80% crime and drama, 20% others
+                #italians: 1-p crime and drama, p others
                 if nationality == 'it':
                     genre1_name = 'crime'
                     genre2_name = 'drama'
-                #brazilians: 80% science fiction and action 20% others
+                #brazilians: 1-p science fiction and action p others
                 elif nationality == 'pt':
                     genre1_name = 'science fiction'
                     genre2_name = 'action'
-                #germans: 80% horror and mystery 20% others
+                #germans: 1-p horror and mystery p others
                 else:
                     genre1_name = 'horror'
                     genre2_name = 'mystery'
@@ -99,11 +99,11 @@ def generate_users(df_gens: pd.DataFrame) -> pd.DataFrame:
 
         elif age == "25-34":
             if rnd.random() > NOISE_USERS:
-                #italians: 1-p documentary and western, 20% others
+                #italians: 1-p documentary and western, p others
                 if nationality == 'it':
                     genre1_name = 'documentary'
                     genre2_name = 'western'
-                #brazilians: 1-p history fiction and western 20% others
+                #brazilians: 1-p history fiction and western p others
                 elif nationality == 'pt':
                     genre1_name = 'history'
                     genre2_name = 'western'
